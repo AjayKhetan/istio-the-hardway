@@ -1057,6 +1057,13 @@ zipkin                   ClusterIP      10.109.148.252   <none>        9411/TCP
 
  Notice the grafana ports and the grafana pod name.
 
+ TODO introduce citadel, galley, policy, tracing, prometheus, jaeger-collector, etc.
+
+ Notice that the `istio-ingressgateway` is a `LoadBalancer` and it is pending.
+ This is because we are using MiniKube. Minkiube has a feature called tunnel.
+ The `minikube tunnel` command creates a route to services deployed with type
+ `LoadBalancer`. When we enable that (pretty soon), you will see pending move to ready.
+
 ## Let's look at Grafana and some other services.
 
 We can use `port-forward` to get access to any of these services that have an HTTP end point.
@@ -1082,6 +1089,15 @@ You ran this in its own terminal. Leave it running.
 
 Now you can access grafana from http://localhost:3000.
 
+Open up Grafana in a browser, click on Home, select Istio Galley Dashboard.
+
+#### Istio Galley Dashboard
+![image](https://user-images.githubusercontent.com/382678/76132661-ed722480-5fc8-11ea-8ec1-3537d7a6a5b3.png)
+
+Repeat and select the Istio Mixer Dashboard.
+
+#### Istio Mixer Dashboard
+![image](https://user-images.githubusercontent.com/382678/76132796-94ef5700-5fc9-11ea-8c6a-147ef3213bad.png)
 
 ---
 
@@ -1091,7 +1107,7 @@ Now you can access grafana from http://localhost:3000.
 The `minikube tunnel` command creates a route to services deployed with type
 `LoadBalancer` and sets their Ingress to their `ClusterIP` see (https://minikube.sigs.k8s.io/docs/tasks/loadbalancer).
 To start up Minikube Tunnel (you will need sudo access) so enter your password when prompted.
-Run `minikube` tunnel in a seperate terminal  
+Run `minikube` tunnel in a separate terminal.
 
 ```sh
 $ minikube tunnel
@@ -1100,7 +1116,20 @@ $ minikube tunnel
 ---
 
 
-Now that we have minikube tunnel running, we should be able to access
+Now that we have `minikube tunnel` running, we should be able to access services more readily.
+If the service is a `loadbalancer`, it will exposed via the `MiniKube tunnel`.
+
+Notice that the `istio-ingressgateway` is a `LoadBalancer` and it was in the pending.
+Now it should be ready and have an external ip address.
+
+#### Istio ingressgateway is ready and has external IPs
+
+```sh
+$ kubectl -n istio-system get svc -l app=istio-ingressgateway
+NAME                   TYPE           CLUSTER-IP      EXTERNAL-IP ...                                                                                               
+istio-ingressgateway   LoadBalancer   10.107.13.254   10.107.13.254   15020:31018/TCP,
+```
+
 
 
 
@@ -1109,7 +1138,7 @@ ____
 
 ## Setting up the gateway
 
-This section explains what we are about to do.
+This section explains how to set up a [gateway](https://istio.io/docs/tasks/traffic-management/ingress/ingress-control/#determining-the-ingress-ip-and-ports).
 
 Set up the gateway so we can access the services.
 
