@@ -1,15 +1,30 @@
 ## Istio the hard-way
 
-I went through the Istio install a few times and it didn't work.
+I went through the Istio install a few times and it didn't always work or I did things, broke some thing and then had to manually fix.
 The instructions are all there but I found them sort of scattered about.
-
+I was looking for the easiest way to get the demos running and then try them out as I am scripting some demos and trying some out for  projects and talks.
 I thought I would start by writing them all down in one place.
+
+
+> NOTE: This is a super super rough draft. It works. I've been through a few times. I more than likely to script out some demos on top of this base rather than spend a lot of time improving this per se. At least no major improvements in the next few weeks. You will see some TODOs.
+
+All of this was around [Getting started with Istio docs](https://istio.io/docs/setup/getting-started/) which is sort of a build your own story format. I tried to put a single path where you can install:
+
+* Grafana
+* Prometheus
+* Kiali
+* FluentD, Elastic Search, and Kibana
+* Jaeger
+
+
+Then start talking about this tools and writing guides and tutorials on top of this base install. 
 
 
 ## Istio Setup
 
-I have a 32 GB RAM Mac book pro so I am just going to run everything on my laptop.
-Thus I am going to use [Minikube on my Mac](http://cloudurable.com/blog/kubernetes_k8s_osx_setup_brew/index.html), [kubectl, kubectx, etc.](http://cloudurable.com/blog/kubernetes_k8s_kubectl_cheat_sheet/index.html).
+I have a 32 GB RAM Mac book pro so I am just going to run everything on my laptop on MiniKube.
+Later I might try it out on OpenShift CRC or KIND or GKE.
+For now, I am going to use [Minikube on my Mac](http://cloudurable.com/blog/kubernetes_k8s_osx_setup_brew/index.html), [kubectl, kubectx, etc.](http://cloudurable.com/blog/kubernetes_k8s_kubectl_cheat_sheet/index.html).
 
 
 #### Setting up Minikube
@@ -1943,3 +1958,18 @@ istioctl dashboard kiali
 
 ## Conclusion
 Now you are all set up and we can start trying stuff out with Istio.
+
+## Resources  
+* [Get started with Istio](https://istio.io/docs/setup/getting-started/)
+* [Set up Istio command line](https://istio.io/docs/setup/install/istioctl/)
+* [Set up Istio on minikube](https://istio.io/docs/setup/platform-setup/minikube/)
+* [Install sample app](https://istio.io/docs/examples/bookinfo/)
+* [Overview of tracing](https://istio.io/docs/tasks/observability/distributed-tracing/overview/)
+* [Set up Jaeger](https://istio.io/docs/tasks/observability/distributed-tracing/jaeger/)
+* [Master metrics set up](https://istio.io/docs/tasks/observability/metrics/)
+* [Use Grafana](https://istio.io/docs/tasks/observability/metrics/using-istio-dashboard/)
+* [Set up Kiali](https://istio.io/docs/tasks/observability/kiali/)
+* [View example in Kiali](https://istio.io/docs/tasks/observability/kiali/)
+* [Stuff you might want to demo in Kiali](https://kiali.io/documentation/features/)
+* [Set up Logging](https://istio.io/docs/tasks/observability/logs/)
+* [Set up FluentD and EFK](https://istio.io/docs/tasks/observability/mixer/logs/fluentd/#example-fluentd-elasticsearch-kibana-stack)
