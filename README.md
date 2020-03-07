@@ -1078,12 +1078,25 @@ to your local machine so that you can access Grafana via your local browser.
 ```sh
 GRAFANA_PORT=$(kubectl -n istio-system get svc | grep grafana | awk '{split($5, port, "/"); print port[1]}' )
 GRAFANA_POD_NAME=$(kubectl -n istio-system get pod | grep grafana | awk '{print $1}')
-kubectl -n istio-system port-forward $GRAFANA_POD_NAME $GRAFANA_POD:$GRAFANA_POD
+kubectl -n istio-system port-forward $GRAFANA_POD_NAME $GRAFANA_PORT:$GRAFANA_PORT
 
 ### Output
 Forwarding from 127.0.0.1:3000 -> 3000
 Forwarding from [::1]:3000 -> 3000
 ```
+
+Create a script call `util/openGrafanaPort.sh ` that runs the above.
+
+#### util/openGrafanaPort.sh
+
+```sh
+#!/bin/bash
+GRAFANA_PORT=$(kubectl -n istio-system get svc | grep grafana | awk '{split($5, port, "/"); print port[1]}' )
+GRAFANA_POD_NAME=$(kubectl -n istio-system get pod | grep grafana | awk '{print $1}')
+kubectl -n istio-system port-forward $GRAFANA_POD_NAME $GRAFANA_PORT:$GRAFANA_PORT
+
+```
+
 Above we set up the Grafana port forward so we can access it from a browser locally using port-forward.
 You ran this in its own terminal. Leave it running.
 
@@ -1105,10 +1118,12 @@ Repeat and select the Istio Mixer Dashboard.
 ## MiniKube tunnel so we can use grafana and friends
 
 The `minikube tunnel` command creates a route to services deployed with type
-`LoadBalancer` and sets their Ingress to their `ClusterIP` see (https://minikube.sigs.k8s.io/docs/tasks/loadbalancer).
+`LoadBalancer` and sets their Ingress to their `ClusterIP` see ([minikube loadbalancer](https://minikube.sigs.k8s.io/docs/tasks/loadbalancer) for more details).
+
 To start up Minikube Tunnel (you will need sudo access) so enter your password when prompted.
 Run `minikube` tunnel in a separate terminal.
 
+#### Running minikube tunnel in its own
 ```sh
 $ minikube tunnel
 ```
@@ -1161,7 +1176,32 @@ INGRESS_HOST=192.168.64.18
 export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 ```
 
+#### Create that as a file set_up_gateway.sh as you will use it again
+```sh
+ $ mkdir util
+ $ touch util/set_up_gateway.sh
+ $ atom set_up_gateway.sh
+ $ chmod +x util/set_up_gateway.sh
+```
+
+#### util/set_up_gateway.sh
+
+```sh
+#!/bin/bash
+
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+export INGRESS_HOST=$(minikube ip)
+env | grep INGRESS
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
+```
+
 #### Apply the gateway networking
+
+This will create routes to `productpage`.
+
+#### Apply routes to BookInfo sample microservices
 
 ```sh
 kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
@@ -1301,7 +1341,9 @@ spec:
 TODO Explain DestinationRule(s), ISTIO_MUTUAL and subsets.
 
 
-See that you have ingress gateway installed
+See that you have ingress gateway installed.
+
+At this point you should be able to curl the `productpage` and verify that the gateway is working.
 
 #### Test gateway
 
@@ -1319,17 +1361,80 @@ $ curl http://$GATEWAY_URL/productpage
 Testing the gateway was easy, we just curl against the gateway URL and get the webpage.
 ____
 
+____
+
+## We could expose other services easily by using
+
+Set up logging (https://istio.io/docs/tasks/observability/logs/access-log/). TBD explain this more.
 
 ## Logging
 
+Next you will want to set up the Elasticsearch, FluentD, Kibana logging, which is called the EFK stack.
+
+####  Apply the telemetry file
 ```sh
 kubectl apply -f samples/bookinfo/telemetry/log-entry.yaml
 ```
 
+#### samples/bookinfo/telemetry/log-entry.yaml
+
+```sh
+# Configuration for logentry instances
+apiVersion: config.istio.io/v1alpha2
+kind: instance
+metadata:
+  name: newlog
+  namespace: istio-system
+spec:
+  compiledTemplate: logentry
+  params:
+    severity: '"warning"'
+    timestamp: request.time
+    variables:
+      source: source.labels["app"] | source.workload.name | "unknown"
+      user: source.user | "unknown"
+      destination: destination.labels["app"] | destination.workload.name | "unknown"
+      responseCode: response.code | 0
+      responseSize: response.size | 0
+      latency: response.duration | "0ms"
+    monitored_resource_type: '"UNSPECIFIED"'
+---
+# Configuration for a stdio handler
+apiVersion: config.istio.io/v1alpha2
+kind: handler
+metadata:
+  name: newloghandler
+  namespace: istio-system
+spec:
+  compiledAdapter: stdio
+  params:
+    severity_levels:
+      warning: 1 # Params.Level.WARNING
+    outputAsJson: true
+---
+# Rule to send logentry instances to a stdio handler
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: newlogstdio
+  namespace: istio-system
+spec:
+  match: "true" # match for all requests
+  actions:
+   - handler: newloghandler
+     instances:
+     - newlog
+---
+
+```
+
+#### Curl the product page
 ```sh
 curl http://$GATEWAY_URL/productpage
 ```
 
+
+### Check the mixer telemetry  logs
 ```sh
 $ kubectl logs -n istio-system -l istio-mixer-type=telemetry -c mixer | grep "newlog" | grep -v '"destination":"telemetry"' | grep -v '"destination":"pilot"' | grep -v '"destination":"policy"' | grep -v '"destination":"unknown"'
 
@@ -1342,9 +1447,12 @@ $ kubectl logs -n istio-system -l istio-mixer-type=telemetry -c mixer | grep "ne
 
 #### set up EFK
 
-```sh
-kubectl apply -f logging-stack.yml  
-```
+Let's set up EFK. We use this [EFK setup guide](https://istio.io/docs/tasks/observability/mixer/logs/fluentd/#example-fluentd-elasticsearch-kibana-stack) as our guide.
+
+
+
+
+Create a `logging-stack.yml` as follows.
 
 #### logging-stack.yml
 ```yaml
@@ -1566,10 +1674,180 @@ spec:
 ```
 
 
+TODO explain this.
+
+
+Now install this logging stack which installs EFK.
+
+### Install EFK into the cluster.
+```sh
+kubectl apply -f logging-stack.yml  
+
+
+### Output
+
+namespace/logging created
+service/elasticsearch created
+deployment.apps/elasticsearch created
+service/fluentd-es created
+deployment.apps/fluentd-es created
+configmap/fluentd-es-config created
+service/kibana created
+deployment.apps/kibana created
+```
+
+
+#### See that EFK is installed in the logging namespace
+
+```sh
+$ kubens
+
+### Output
+bookinfo
+default
+istio-system
+kube-node-lease
+kube-public
+kube-system
+logging
+
+## Switch to the namespace logging
+$ kubens logging
+
+### Output
+Context "minikube" modified.
+Active namespace is "logging".
+
+
+### Get the pods
+$ kubectl get pods
+NAME                             READY   STATUS    RESTARTS   AGE
+elasticsearch-7574dc448c-n6qkj   1/1     Running   0          69s
+fluentd-es-74854b8768-lddld      1/1     Running   0          69s
+kibana-554ffd4fd8-dxdvc          1/1     Running   0          69s
+
+```
+
+You can see that elasticsearch, fluentd and kibana are running.
+
+Now let's open up Kibana and do some poking around.
+
+First we have to open up the port like we did for Grafana.
+Create a file called util/openKibanaPort.sh
+
+#### util/openKibanaPort.sh
+```sh
+#!/bin/bash
+KIBANA_PORT=$(kubectl -n logging get svc | grep kibana | awk '{split($5, port, "/"); print port[1]}')
+KIBANA_POD_NAME=$(kubectl -n logging get pod | grep kibana | awk '{print $1}')
+kubectl -n logging port-forward $KIBANA_POD_NAME $KIBANA_PORT:$KIBANA_PORT
+
+```
+
+Now open up a new terminal and run it.
+
+####  Run openKibanaPort.sh
+
+```sh
+$ pwd
+/Users/richardhightower/istio/istio-1.4.5
+(⎈ |minikube:logging)richardhightower@Richards-MacBook-Pro istio-1.4.5 %
+
+$ cd util
+(⎈ |minikube:logging)richardhightower@Richards-MacBook-Pro util %
+
+$ ./openKibanaPort.sh
+
+### Output
+Forwarding from 127.0.0.1:5601 -> 5601
+Forwarding from [::1]:5601 -> 5601
+```
+
+
+## Run fluetnd telemetry
+
 ```sh
 kubectl apply -f samples/bookinfo/telemetry/fluentd-istio.yaml
-curl http://$GATEWAY_URL/productpage
+
+### Output
+instance.config.istio.io/newlog configured
+handler.config.istio.io/handler created
+rule.config.istio.io/newlogtofluentd created
+
 ```
+
+
+
+#### samples/bookinfo/telemetry/fluentd-istio.yaml
+
+```yaml
+# Configuration for logentry instances
+apiVersion: config.istio.io/v1alpha2
+kind: instance
+metadata:
+  name: newlog
+  namespace: istio-system
+spec:
+  compiledTemplate: logentry
+  params:
+    severity: '"info"'
+    timestamp: request.time
+    variables:
+      source: source.labels["app"] | source.workload.name | "unknown"
+      user: source.user | "unknown"
+      destination: destination.labels["app"] | destination.workload.name | "unknown"
+      responseCode: response.code | 0
+      responseSize: response.size | 0
+      latency: response.duration | "0ms"
+    monitored_resource_type: '"UNSPECIFIED"'
+---
+# Configuration for a Fluentd handler
+apiVersion: config.istio.io/v1alpha2
+kind: handler
+metadata:
+  name: handler
+  namespace: istio-system
+spec:
+  compiledAdapter: fluentd
+  params:
+    address: "fluentd-es.logging:24224"
+---
+# Rule to send logentry instances to the Fluentd handler
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: newlogtofluentd
+  namespace: istio-system
+spec:
+  match: "true" # match for all requests
+  actions:
+   - handler: handler
+     instances:
+     - newlog
+---
+
+```
+
+
+#### Now hit the product page a few times
+```
+source util/set_up_gateway.sh  
+for i in {0..3}; do curl http://$GATEWAY_URL/productpage; done
+```
+
+* Now go open up the browser to http://localhost:5601 to open the Kibana web ui.
+* Click `Set up index pattern` in the right hand corner.
+* For Index Pattern select `*`.
+* Hit Next then select @timestamp from the `Time Filter field name` drop down
+* Then click `Create index pattern` button
+* Then click `Discover` on the left hand navigation.
+
+
+You should see something like this:
+
+#### Kibana showing access logs
+![image](https://user-images.githubusercontent.com/382678/76135348-1b606480-5fdb-11ea-838c-0d163a91dc56.png)
+
 
 
 
