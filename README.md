@@ -1830,7 +1830,7 @@ spec:
 
 
 #### Now hit the product page a few times
-```
+```sh
 source util/set_up_gateway.sh  
 for i in {0..3}; do curl http://$GATEWAY_URL/productpage; done
 ```
@@ -1856,22 +1856,90 @@ ____
 
 ## Jaeger
 
-```
+
+TODO Describe Jaeger.
+
+Now let us look at [Jaeger](https://istio.io/docs/tasks/observability/distributed-tracing/jaeger/) which will allow us to look at open trace data.
+
+The easiest way to look at Jaeger trace data and spans it to use `istioctl dashboard`.
+
+The `istioctl dashboard` allows access to Istio web UIs, namely:
+
+* controlz    Open ControlZ web UI
+* envoy       Open Envoy admin web UI
+* grafana     Open Grafana web UI
+* jaeger      Open Jaeger web UI
+* kiali       Open Kiali web UI
+* prometheus  Open Prometheus web UI
+* zipkin      Open Zipkin web UI
+
+#### Use istioctl dashboard jaeger to see the jaeger dashboard
+
+```sh
 
  istioctl dashboard jaeger
 
+ ### Output
+ http://localhost:60605
+
 ```
 
+It should load launch your default browser. If Safari does not work, copy the URL to Firefox or Chrome.
 
+
+#### Hit product page a bunch and see what happens in jaeger
+
+```sh
+
+$ source util/set_up_gateway.sh
+
+### Output
+INGRESS_PORT=30851
+SECURE_INGRESS_PORT=31073
+INGRESS_HOST=192.168.64.18
+
+$ for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; done
+
+
+```
+
+In the Jaeger Web UI do the following:
+
+* Select service 'productpage.bookinfo'
+* Select operations all
+* Click the Find Traces Button.
+
+You should See the following.
+
+#### Product Page Trace Data in Jaeger
+
+![image](https://user-images.githubusercontent.com/382678/76135597-1c929100-5fdd-11ea-8ec4-e55feef6995e.png)
+
+
+Now click on a span. Any span.
+
+#### Product Page Trace Data in Jaeger
+![image](https://user-images.githubusercontent.com/382678/76135628-801cbe80-5fdd-11ea-8af1-7f01629a97ce.png)
+
+You can see the service call stacks and timings between calls.
 ____
 
-## Visualize
+## Kiali Visualize
 
-KIALI_USERNAME=$(read '?Kiali Username: ' uval && echo -n $uval | base64)
-KIALI_PASSPHRASE=$(read -s "?Kiali Passphrase: " pval && echo -n $pval | base64)
+#### Use istioctl dashboard kiali to see the kiali dashboard
 
-NAMESPACE=istio-system
-kubectl create namespace $NAMESPACE
+```sh
+
+istioctl dashboard kiali
+
+```
+
+* Log in with the credentials you set up at the very start.
+* Select Graph from the far left hand navigation
+* Select the namespace `bookinfo` from the top middle left dropdown.
+
+![image](https://user-images.githubusercontent.com/382678/76135705-6a5bc900-5fde-11ea-9fe2-e4b11ec54e96.png)
 
 
- istioctl manifest apply --set profile=demo
+## Conclusion
+Now you are all set up and we can start trying stuff out with Istio.
