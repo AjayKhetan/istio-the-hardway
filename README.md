@@ -1,9 +1,11 @@
-## Istio the hard-way
+## Istio the hard-way ROUGH EARLY DRAFT
 
 I went through the Istio install a few times and it didn't always work or I did things, broke some thing and then had to manually fix.
 The instructions are all there but I found them sort of scattered about.
 I was looking for the easiest way to get the demos running and then try them out as I am scripting some demos and trying some out for  projects and talks.
 I thought I would start by writing them all down in one place.
+
+You can find [this here and add issues and ask questions](https://github.com/cloudurable/istio-the-hardway). 
 
 
 > NOTE: This is a super super rough draft. It works. I've been through a few times. I more than likely to script out some demos on top of this base rather than spend a lot of time improving this per se. At least no major improvements in the next few weeks. You will see some TODOs.
@@ -17,7 +19,9 @@ All of this was around [Getting started with Istio docs](https://istio.io/docs/s
 * Jaeger
 
 
-Then start talking about this tools and writing guides and tutorials on top of this base install. 
+Then start talking about this tools and writing guides and tutorials on top of this base install.
+
+![image](https://user-images.githubusercontent.com/382678/76135990-71380b00-5fe1-11ea-9406-5d48941c603b.png)
 
 
 ## Istio Setup
