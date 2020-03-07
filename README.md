@@ -1001,6 +1001,88 @@ Events:
 Notice that we have more images in our pod. The istio proxy is there too (see `istio-proxy`).
 You can see the additional containers and an init container (`istio-init`).
 
+
+___
+
+
+## Installed services in Istio demo
+
+We used the demo install of Istio which installed Prometheus (metrics gatherer, alerts, etc. for KPIs),
+Grafana (metrics viewer), Kiali (Service Mesh UI), Jaeger (OpenTrace implementation), and all of the Istio plumbing.
+
+
+Let's Look around the istio-system namespace.
+
+```sh
+kubectl --namespace istio-system get pods
+NAME                                      READY   STATUS    RESTARTS   AGE
+grafana-6c8f45499-b7pgl                   1/1     Running   0          45h
+istio-citadel-767757649c-wk5z6            1/1     Running   0          45h
+istio-egressgateway-5585c98cdb-mjhsj      1/1     Running   0          45h
+istio-galley-6d467f5567-v6w7p             1/1     Running   0          45h
+istio-ingressgateway-77d7cc794-7jf2p      1/1     Running   0          45h
+istio-pilot-58584cfd66-mdt4n              1/1     Running   0          45h
+istio-policy-5dc7977678-94vgf             1/1     Running   1          45h
+istio-sidecar-injector-68d9b4bb87-kt28b   1/1     Running   0          45h
+istio-telemetry-5b8f48df4b-f4drw          1/1     Running   2          45h
+istio-tracing-78548677bc-8m2t2            1/1     Running   0          45h
+kiali-fb5f485fb-96gjw                     1/1     Running   0          45h
+prometheus-685585888b-k45tr               1/1     Running   0          45h
+```
+
+## Installed services in Istio demo
+```
+kubectl -n istio-system get svc
+
+
+### Output
+NAME                     TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                                                                                      AGE
+grafana                  ClusterIP      10.109.55.124    <none>        3000/TCP                                                                                                                     45h
+istio-citadel            ClusterIP      10.99.73.238     <none>        8060/TCP,15014/TCP                                                                                                           45h
+istio-egressgateway      ClusterIP      10.106.10.25     <none>        80/TCP,443/TCP,15443/TCP                                                                                                     45h
+istio-galley             ClusterIP      10.103.230.190   <none>        443/TCP,15014/TCP,9901/TCP,15019/TCP                                                                                         45h
+istio-ingressgateway     LoadBalancer   10.107.13.254    <pending>     15020:31018/TCP,80:30851/TCP,443:31073/TCP,15029:31105/TCP,15030:30824/TCP,15031:31640/TCP,15032:30206/TCP,15443:30523/TCP   45h
+istio-pilot              ClusterIP      10.106.208.222   <none>        15010/TCP,15011/TCP,8080/TCP,15014/TCP                                                                                       45h
+istio-policy             ClusterIP      10.110.64.14     <none>        9091/TCP,15004/TCP,15014/TCP                                                                                                 45h
+istio-sidecar-injector   ClusterIP      10.103.96.230    <none>        443/TCP                                                                                                                      45h
+istio-telemetry          ClusterIP      10.99.155.191    <none>        9091/TCP,15004/TCP,15014/TCP,42422/TCP                                                                                       45h
+jaeger-agent             ClusterIP      None             <none>        5775/UDP,6831/UDP,6832/UDP                                                                                                   45h
+jaeger-collector         ClusterIP      10.96.91.234     <none>        14267/TCP,14268/TCP,14250/TCP                                                                                                45h
+jaeger-query             ClusterIP      10.98.226.215    <none>        16686/TCP                                                                                                                    45h
+kiali                    ClusterIP      10.104.29.238    <none>        20001/TCP                                                                                                                    45h
+prometheus               ClusterIP      10.104.5.36      <none>        9090/TCP                                                                                                                     45h
+tracing                  ClusterIP      10.106.130.227   <none>        80/TCP                                                                                                                       45h
+zipkin                   ClusterIP      10.109.148.252   <none>        9411/TCP  
+```
+
+ Notice the grafana ports and the grafana pod name.
+
+## Let's look at Grafana and some other services.
+
+We can use `port-forward` to get access to any of these services that have an HTTP end point.
+
+The `kubectl` `port-forward` command will forward one or more local ports to a pod.
+
+
+In a new terminal issue these two commands to get the Grafana pod name and add a port forward
+to your local machine so that you can access Grafana via your local browser.
+
+#### Grafana port forward set up-Use kubectl port-forward to access grafana in its own terminal window
+```sh
+GRAFANA_PORT=$(kubectl -n istio-system get svc | grep grafana | awk '{split($5, port, "/"); print port[1]}' )
+GRAFANA_POD_NAME=$(kubectl -n istio-system get pod | grep grafana | awk '{print $1}')
+kubectl -n istio-system port-forward $GRAFANA_POD_NAME $GRAFANA_POD:$GRAFANA_POD
+
+### Output
+Forwarding from 127.0.0.1:3000 -> 3000
+Forwarding from [::1]:3000 -> 3000
+```
+Above we set up the Grafana port forward so we can access it from a browser locally using port-forward.
+You ran this in its own terminal. Leave it running.
+
+Now you can access grafana from http://localhost:3000.
+
+
 ---
 
 
@@ -1018,31 +1100,10 @@ $ minikube tunnel
 ---
 
 
-
-```
-kubectl -n istio-system get svc
+Now that we have minikube tunnel running, we should be able to access
 
 
-### Output
-NAME                     TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)                                                                                                                      AGE
-istio-citadel            ClusterIP      10.106.10.84     <none>          8060/TCP,15014/TCP                                                                                                           23m
-istio-galley             ClusterIP      10.102.145.75    <none>          443/TCP,15014/TCP,9901/TCP,15019/TCP                                                                                         23m
-istio-ingressgateway     LoadBalancer   10.99.152.197    10.99.152.197   15020:30081/TCP,80:30530/TCP,443:32417/TCP,15029:30972/TCP,15030:30169/TCP,15031:30964/TCP,15032:30239/TCP,15443:31113/TCP   23m
-istio-pilot              ClusterIP      10.96.206.225    <none>          15010/TCP,15011/TCP,8080/TCP,15014/TCP                                                                                       23m
-istio-policy             ClusterIP      10.99.108.92     <none>          9091/TCP,15004/TCP,15014/TCP                                                                                                 23m
-istio-sidecar-injector   ClusterIP      10.108.176.251   <none>          443/TCP                                                                                                                      23m
-istio-telemetry          ClusterIP      10.110.30.213    <none>          9091/TCP,15004/TCP,15014/TCP,42422/TCP                                                                                       22m
-prometheus               ClusterIP      10.102.221.217   <none>          9090/TCP                                                                                                                     23m
-```
 
-
-___
-
-Let's look at Grafana.
-
-Grafana set up
-
-$ kubectl -n istio-system port-forward $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000 &
 
 ____
 
