@@ -5,7 +5,7 @@ The instructions are all there but I found them sort of scattered about.
 I was looking for the easiest way to get the demos running and then try them out as I am scripting some demos and trying some out for  projects and talks.
 I thought I would start by writing them all down in one place.
 
-You can find [this here and add issues and ask questions](https://github.com/cloudurable/istio-the-hardway). 
+You can find [this here and add issues and ask questions](https://github.com/cloudurable/istio-the-hardway).
 
 
 > NOTE: This is a super super rough draft. It works. I've been through a few times. I more than likely to script out some demos on top of this base rather than spend a lot of time improving this per se. At least no major improvements in the next few weeks. You will see some TODOs.
@@ -280,8 +280,10 @@ rm generated-manifest.yaml
 
 It appears that it mostly worked. We may have to set up a `galled-envoy-config`.
 
-The `generate` command generates the manifest for the demo profile then
+The `generate` command generates the manifest for the `demo` profile then
 `verify-install` verifies the manifest against what is running in the cluster.
+
+This page describes all of the different [istio profiles](https://istio.io/docs/setup/additional-setup/config-profiles/).
 
 
 Let's look around a bit more.
@@ -1019,6 +1021,13 @@ Events:
 
 Notice that we have more images in our pod. The istio proxy is there too (see `istio-proxy`).
 You can see the additional containers and an init container (`istio-init`).
+
+Note some organizations will not just let you install initContainers and sidecar containers that have
+elevated privileges and special RBAC will nilly. If that is the case which should almost be always,
+then you will need [the Kubernetes CNI driver for Istio](https://istio.io/docs/setup/additional-setup/cni/).
+
+If you don't use auto injection like above then you need [to use `istioctl kube-inject` to inject the side car and init container](https://istio.io/docs/setup/additional-setup/sidecar-injection/).
+
 
 
 ___
@@ -1917,7 +1926,7 @@ INGRESS_PORT=30851
 SECURE_INGRESS_PORT=31073
 INGRESS_HOST=192.168.64.18
 
-$ for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; done
+$ for i in `seq 1 10000`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; done
 
 
 ```
@@ -1964,6 +1973,10 @@ istioctl dashboard kiali
 Now you are all set up and we can start trying stuff out with Istio.
 
 ## Resources  
+* [Istio the hard way, part 1](https://github.com/cloudurable/istio-the-hardway)
+* [Istio the hard way, part 2, working with routes](https://github.com/cloudurable/istio-the-hardway/blob/master/route.md)
+* [Set up Minikube on a Mac](http://cloudurable.com/blog/kubernetes_k8s_osx_setup_brew/index.html)
+* [Kubectl cheatsheet](http://cloudurable.com/blog/kubernetes_k8s_kubectl_cheat_sheet/index.html)
 * [Get started with Istio](https://istio.io/docs/setup/getting-started/)
 * [Set up Istio command line](https://istio.io/docs/setup/install/istioctl/)
 * [Set up Istio on minikube](https://istio.io/docs/setup/platform-setup/minikube/)
@@ -1977,3 +1990,7 @@ Now you are all set up and we can start trying stuff out with Istio.
 * [Stuff you might want to demo in Kiali](https://kiali.io/documentation/features/)
 * [Set up Logging](https://istio.io/docs/tasks/observability/logs/)
 * [Set up FluentD and EFK](https://istio.io/docs/tasks/observability/mixer/logs/fluentd/#example-fluentd-elasticsearch-kibana-stack)
+* [Description of different istio profiles](https://istio.io/docs/setup/additional-setup/config-profiles/)
+* [Kubernetes CNI driver for Istio if you can't use init containers and side cars](https://istio.io/docs/setup/additional-setup/cni/)
+* [Using `istioctl kube-inject` instead of auto injection](https://istio.io/docs/setup/additional-setup/sidecar-injection/)
+# [Traffic Management](https://istio.io/docs/concepts/traffic-management/)
