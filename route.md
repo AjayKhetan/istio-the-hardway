@@ -1,4 +1,4 @@
-# Istio the hard way round 2 - working with Istio Routes
+# Istio the hard way round 2 - working with Istio Routes - VirtualServices
 
 ## Using the route demo
 
