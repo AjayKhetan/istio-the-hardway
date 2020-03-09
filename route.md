@@ -303,8 +303,8 @@ In the Kiali web UI do the following:
 
 ![Kiali Dashboard showing version 1 only routing](https://user-images.githubusercontent.com/382678/76174772-838f8180-6166-11ea-81a2-c96b6dcfc508.png)
 
-You may wonder why `ratings` `v1` and `reviews` v2, and v3 are still visible. It is because they are still deployed.
-There just is no routes that are routing traffic to them defined. If there was traffic, then you would see lines drawn to those in
+You may wonder why `ratings` `v1` and `reviews` v2, and v3 are still visible and yet no lines are drawn to them. It is because they are still deployed.
+There just is no routes that are routing traffic to them defined. If there was traffic, then you would see lines drawn to those versions of services.
 
 #### BookInfo Kubernetes Deployments in istio bookinfo demo
 ![BookInfo Kubernetes Deployments in istio bookinfo demo](https://user-images.githubusercontent.com/382678/76174808-b2a5f300-6166-11ea-9f04-198d15f61eb1.png)
@@ -312,11 +312,96 @@ There just is no routes that are routing traffic to them defined. If there was t
 #### BookInfo Services defined in istio bookinfo demo
 ![BookInfo Services defined in istio bookinfo demo](https://user-images.githubusercontent.com/382678/76174936-6f984f80-6167-11ea-8d41-6d7bc3c4e650.png)
 
+## Route based on user identity
+
+Next, let's change the route manifest files to route traffic based on a user named Jason.
+The Jason user gets routed to the service `reviews` `v2`.
+
+
+> Note that Istio doesn’t have any special, built-in understanding of user identity. This example is enabled by the fact that the productpage service adds a custom end-user header to all outbound HTTP requests to the reviews service. --[Route based on user identity](https://istio.io/docs/tasks/traffic-management/request-routing/#route-based-on-user-identity)
+
+
+Run the following command to enable user-based routing:
+
+#### samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml - apply user Jason routing
+
+```sh  
+$ kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+
+### Output
+virtualservice.networking.istio.io/reviews configured
+```
+
+#### samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+```yaml
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  hosts:
+    - reviews
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+
+
+```
+
+See the config `spec->http->match->headers->end-user->exact:jason`.
+
+
+Now, go to `http://$GATEWAY_URL/productpage` in your browser, and log in as user jason.
+
+Logout or Log in as another user (e.g., Rick, Sue, etc.).
+The traffic is routed to `reviews` `v1` for all users except Jason.
+Note the differences in logging in as any user or a user named Jason.
+
+#### Istio Route logging in as Joe instead of Jason
+![Istio Route log in as Joe instead of Jason](https://user-images.githubusercontent.com/382678/76175761-45e12780-616b-11ea-82d1-ef1488cf0654.png)
+
+#### Istio Route logging in as Jason
+![Istio Route log in as Jason](https://user-images.githubusercontent.com/382678/76175808-7fb22e00-616b-11ea-9b36-653b3afebfff.png)
+
+
+Log into as Jason and refresh the page a few times. Now load up the services graph in Kiali again. Notice that the Jason route use
+ `reviews` `v2` microservice and the `reviews` `v` microservice uses the `ratings` `v1` service.
+
+#### Jason Route uses reviews v2 which uses ratings v1
+![Jason Route uses reviews v2 which uses ratings v1](https://user-images.githubusercontent.com/382678/76175855-b6884400-616b-11ea-9278-ffdcf5ae8a3d.png)
+
+
+
+See [VirtualService route rules](https://istio.io/docs/reference/config/networking/virtual-service/#HTTPMatchRequest) because you can match URI, headers, request params, cookies, ports, gateway origins and a lot more than just headers.
+
+The match values can be matched in several modes not just exact.
+* exact: value for exact  match
+* prefix: prefix match
+* regex: regex-based match (e.g., non empty string `^(?!\s*$).+`)
+
+
+
+## Conclusion
+
+In this task, we used Istio to send all traffic to the v1 version of each microservice in the Istio BookInfo sample.
+
 
 
 ## Resources  
 * [Istio the hard way, part 1](https://github.com/cloudurable/istio-the-hardway)
 * [Istio the hard way, part 2, working with routes](https://github.com/cloudurable/istio-the-hardway/blob/master/route.md)
+* [VirtualService route rules](https://istio.io/docs/reference/config/networking/virtual-service/#HTTPMatchRequest)
 * [Set up Minikube on a Mac](http://cloudurable.com/blog/kubernetes_k8s_osx_setup_brew/index.html)
 * [Kubectl cheatsheet](http://cloudurable.com/blog/kubernetes_k8s_kubectl_cheat_sheet/index.html)
 * [Get started with Istio](https://istio.io/docs/setup/getting-started/)
