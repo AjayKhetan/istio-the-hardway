@@ -391,10 +391,147 @@ The match values can be matched in several modes not just exact.
 * regex: regex-based match (e.g., non empty string `^(?!\s*$).+`)
 
 
+## Checking to see if a user is logged in
+
+Let's cement that last concept and augment the last example a bit.
+Let's create a route that if a user is logged in at all routes `reviews` `v3`.
+If they are a gold user, their user name is prefixed with `gold_` they get routed to `reviews` `v2`.
+Then if they are not logged in at all they get routed to `reviews` `v1`.
+
+* Logged in go to `reviews` `v3`
+* Logged in as gold user to `reviews` `v2`
+* Not logged in go to `reviews` `v1`.
+
+
+Create a new route manifest file called `route_loggedin.yaml`.
+
+#### Create a new route manifest file called route_loggedin.yaml
+```sh
+
+$ touch route_loggedin.yaml
+$ atom route_loggedin.yaml
+
+```
+
+The `route_loggedin.yaml` will contain a prefix match and a regex match for header end-user as follows.
+
+#### route_loggedin.yaml
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews-logged-in
+spec:
+  hosts:
+    - reviews
+  http:
+  - match:
+    - headers:
+        end-user:
+          regex: ^(?!\s*$).+
+    route:
+    - destination:
+        host: reviews
+        subset: v3
+  - match:
+    - headers:
+        end-user:
+          prefix: gold_
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+
+```
+
+Recall last time we used only an exact match.
+Now let's apply our new route manifest.
+
+
+#### apply our new Istio VirtualService route manifest
+```sh
+
+## Delete the old rule so we don't have conflicts.
+$ kubectl delete -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+
+### Output
+virtualservice.networking.istio.io "reviews" deleted
+
+
+## Apply the new rules.
+$ kubectl apply -f route_loggedin.yaml        
+
+### Output                           
+virtualservice.networking.istio.io/reviews-logged-in created
+
+## Now let's see it.
+$ kubectl get virtualservice reviews-logged-in -o yaml
+
+### Output   
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"networking.istio.io/v1alpha3","kind":"VirtualService","metadata":{"annotations":{},"name":"reviews-logged-in","namespace":"bookinfo"},"spec":{"hosts":["reviews"],"http":[{"match":[{"headers":{"end-user":{"regex":"^(?!\\s*$).+"}}}],"route":[{"destination":{"host":"reviews","subset":"v3"}}]},{"match":[{"headers":{"end-user":{"prefix":"gold_"}}}],"route":[{"destination":{"host":"reviews","subset":"v2"}}]},{"route":[{"destination":{"host":"reviews","subset":"v1"}}]}]}}
+  creationTimestamp: "2020-03-09T01:58:39Z"
+  generation: 1
+  name: reviews-logged-in
+  namespace: bookinfo
+  resourceVersion: "97713"
+  selfLink: /apis/networking.istio.io/v1alpha3/namespaces/bookinfo/virtualservices/reviews-logged-in
+  uid: c8194fc6-520d-47eb-be9b-1ce0681d45e7
+spec:
+  hosts:
+  - reviews
+  http:
+  - match:
+    - headers:
+        end-user:
+          regex: ^(?!\s*$).+
+    route:
+    - destination:
+        host: reviews
+        subset: v3
+  - match:
+    - headers:
+        end-user:
+          prefix: gold_
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+```
+
+Now try logging in as a gold user, a logged in user and then try not logging in.
+
+
+
+#### Istio route rules: Not logged in
+![Istio route rules: Not logged in](https://user-images.githubusercontent.com/382678/76176761-2cda7580-616f-11ea-8923-6117d054e581.png)
+
+
+#### Istio route rules: Logged in as a gold user
+![Istio route rules: Logged in as a gold user](https://user-images.githubusercontent.com/382678/76176816-52677f00-616f-11ea-9c36-35c702b54e20.png)
+
+#### Istio route rules: Any logged in user
+![Istio route rules: Any logged in user](https://user-images.githubusercontent.com/382678/76176845-6dd28a00-616f-11ea-8f14-54a60dee6d03.png)
+
 
 ## Conclusion
 
-In this task, we used Istio to send all traffic to the v1 version of each microservice in the Istio BookInfo sample.
+In this task, we used Istio to send all traffic to the `v1` versions of each microservice in the Istio BookInfo sample.
+Then you routed traffic differently if the user was logged in as `Jason` using an `exact` match. Then we just did a rift and
+wrote some route rules that matched if a user was logged, if they were not logged in and if they were a gold user using `prefix`, and `regex` matches.
 
 
 
