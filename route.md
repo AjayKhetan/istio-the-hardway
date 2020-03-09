@@ -6,6 +6,9 @@ Starting from where we left off in [the install guide aka Istio the Hard way](ht
 
 Let's walk through the [route demo](https://istio.io/docs/tasks/traffic-management/request-routing/).
 
+Let's review and make sure we are ready for part 2. 
+
+Recall we installed the sample Istio BookInfo application. 
 
 #### Installed sample Istio application
 ```sh
@@ -29,14 +32,14 @@ The ***BookInfo Istio Demo application*** has the following microservices:
 
 As you can see the ***Istio Bookinfo sample***  is made of the `Productpage`, `Details`, `Reviews` and `Ratings` microservices.
 
-If you followed along with the first guide then you will have three versions  of the `Ratings`microservice.
+If you followed along with the first guide then you will have three versions of the `Ratings`microservice.
 
 
 > To illustrate the problem this causes, access the Bookinfo app’s /productpage in a browser and refresh several times. You’ll notice that sometimes the book review output contains star ratings and other times it does not. This is because without an explicit default service version to route to, Istio routes requests to all available versions in a round robin fashion. --[route demo](https://istio.io/docs/tasks/traffic-management/request-routing/)
 
 
 First let's route all of the traffic to just v1 of the reviews microservices.
-But before we do that. Let's peek around a bit.
+But before we do that. Let's peek around a bit, and make sure all is well.
 
 
 #### Make sure Minikube is running, we are in the right context and the right namespace
