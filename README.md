@@ -1993,4 +1993,4 @@ Now you are all set up and we can start trying stuff out with Istio.
 * [Description of different istio profiles](https://istio.io/docs/setup/additional-setup/config-profiles/)
 * [Kubernetes CNI driver for Istio if you can't use init containers and side cars](https://istio.io/docs/setup/additional-setup/cni/)
 * [Using `istioctl kube-inject` instead of auto injection](https://istio.io/docs/setup/additional-setup/sidecar-injection/)
-# [Traffic Management](https://istio.io/docs/concepts/traffic-management/)
+* [Traffic Management](https://istio.io/docs/concepts/traffic-management/)
