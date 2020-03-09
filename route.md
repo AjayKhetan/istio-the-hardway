@@ -6,9 +6,9 @@ Starting from where we left off in [the install guide aka Istio the Hard way](ht
 
 Let's walk through the [route demo](https://istio.io/docs/tasks/traffic-management/request-routing/).
 
-Let's review and make sure we are ready for part 2. 
+Let's review and make sure we are ready for part 2.
 
-Recall we installed the sample Istio BookInfo application. 
+Recall we installed the sample Istio BookInfo application.
 
 #### Installed sample Istio application
 ```sh
@@ -565,4 +565,4 @@ wrote some route rules that matched if a user was logged, if they were not logge
 * [Description of different istio profiles](https://istio.io/docs/setup/additional-setup/config-profiles/)
 * [Kubernetes CNI driver for Istio if you can't use init containers and side cars](https://istio.io/docs/setup/additional-setup/cni/)
 * [Using `istioctl kube-inject` instead of auto injection](https://istio.io/docs/setup/additional-setup/sidecar-injection/)
-# [Traffic Management](https://istio.io/docs/concepts/traffic-management/)
+* [Traffic Management](https://istio.io/docs/concepts/traffic-management/)
