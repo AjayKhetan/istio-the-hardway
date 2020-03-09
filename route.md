@@ -1,4 +1,4 @@
-# Istio the hard way round 2 - working with Istio Routes (Virtual Services) 
+# Istio the hard way round 2 - working with Istio Routes
 
 ## Using the route demo
 
@@ -526,6 +526,11 @@ Now try logging in as a gold user, a logged in user and then try not logging in.
 #### Istio route rules: Any logged in user
 ![Istio route rules: Any logged in user](https://user-images.githubusercontent.com/382678/76176845-6dd28a00-616f-11ea-8f14-54a60dee6d03.png)
 
+Try using the productpage web app with all three different ways then load up the Kiali Dashboard, and look at the services graph.
+Turn on request percentages (2nd row of drop downs and the 2nd column).
+
+#### Istio route rules shown in Kiali with request percentages
+![Istio route rules shown in Kiali with request percentages](https://user-images.githubusercontent.com/382678/76177935-dbcc8080-6172-11ea-906c-2ed63616ffd0.png)
 
 ## Conclusion
 
