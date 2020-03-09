@@ -1,11 +1,10 @@
+# Istio the hard way round 2 - working with Istio Routes
+
 ## Using the route demo
 
 Starting from where we left off in [the install guide aka Istio the Hard way](https://www.linkedin.com/pulse/istio-hard-way-rick-hightower/). You may recall that we installed the sample Istio `bookinfo` application which consists of several microservices.
 
 Let's walk through the [route demo](https://istio.io/docs/tasks/traffic-management/request-routing/).
-
-
-
 
 
 #### Installed sample Istio application
@@ -294,7 +293,7 @@ http://localhost:64338/kiali
 ```
 
 
-In the web UI do the following:
+In the Kiali web UI do the following:
 
 1. Click on `Graph` Navigation on the left side bar.
 2. Select the `bookinfo` namespace from the namespace dropdown on the top left side of the main window
@@ -305,7 +304,7 @@ In the web UI do the following:
 ![Kiali Dashboard showing version 1 only routing](https://user-images.githubusercontent.com/382678/76174772-838f8180-6166-11ea-81a2-c96b6dcfc508.png)
 
 You may wonder why `ratings` `v1` and `reviews` v2, and v3 are still visible. It is because they are still deployed.
-There just is no routes that are routing traffic to them defined.
+There just is no routes that are routing traffic to them defined. If there was traffic, then you would see lines drawn to those in
 
 #### BookInfo Kubernetes Deployments in istio bookinfo demo
 ![BookInfo Kubernetes Deployments in istio bookinfo demo](https://user-images.githubusercontent.com/382678/76174808-b2a5f300-6166-11ea-9f04-198d15f61eb1.png)
@@ -317,6 +316,7 @@ There just is no routes that are routing traffic to them defined.
 
 ## Resources  
 * [Istio the hard way, part 1](https://github.com/cloudurable/istio-the-hardway)
+* [Istio the hard way, part 2, working with routes](https://github.com/cloudurable/istio-the-hardway/blob/master/route.md)
 * [Set up Minikube on a Mac](http://cloudurable.com/blog/kubernetes_k8s_osx_setup_brew/index.html)
 * [Kubectl cheatsheet](http://cloudurable.com/blog/kubernetes_k8s_kubectl_cheat_sheet/index.html)
 * [Get started with Istio](https://istio.io/docs/setup/getting-started/)
