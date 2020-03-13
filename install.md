@@ -9,7 +9,7 @@ I was looking for the easiest way to get the demos running and then try them out
 Before I finished writing the first part, Istio 1.5 was released. This is for Istio-1.4.5.
 I plan on upgrading it to [Istio 1.5](https://github.com/istio/istio/wiki/Istio-Release-1.5) or perhaps I will wait until Istio 1.6.
 
-It also looks like the [getting started guide that I used](https://archive.istio.io/v1.4/docs/setup/getting-started/) has improved in [Istio 1.5](docs/setup/getting-started/#download). One reason that I might upgrade this to Istio 1.5 is that [Istio 1.4 has not been tested with Kubernetes 1.16](https://archive.istio.io/v1.4/docs/setup/platform-setup/) and we use Kubernetes 1.16 via Open Shift 4.2 at a few clients (so my day jobs). Istio 1.5 has been tested with [Kubernetes 1.16](https://istio.io/docs/setup/platform-setup/).
+It also looks like the [getting started guide that I used](https://archive.istio.io/v1.4/docs/setup/getting-started/) has improved in [Istio 1.5](docs/setup/getting-started/#download). One reason that I might upgrade this to Istio 1.5 is that [Istio 1.4 has not been tested with Kubernetes 1.16](https://archive.istio.io/v1.4/docs/setup/platform-setup/) and we use Kubernetes 1.16 via Open Shift 4.2 at a few clients (so my day job). Istio 1.5 has been tested with [Kubernetes 1.16](https://istio.io/docs/setup/platform-setup/).
 
 You can find [this Istio guide here and add issues and ask questions](https://github.com/cloudurable/istio-the-hardway).
 
